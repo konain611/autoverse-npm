@@ -1,0 +1,12 @@
+{
+  "name": "autoverse-agent-cli",
+  "version": "1.0.2",
+  "description": "A simple CLI that greets you",
+  "main": "index.js",
+  "bin": {
+    "autoverse-agent-cli": "./index.js"
+  },
+  "keywords": ["cli", "autoverse"],
+  "author": "Syed Konain Nasir",
+  "license": "ISC"
+}
