@@ -1,136 +1,67 @@
 #!/usr/bin/env node
 
 const readline = require('readline');
-const fs = require('fs');
-const path = require('path');
+const { detect, saveEnv } = require('./lib/detect');
+const { setupNext }       = require('./lib/setup-next');
+const { setupReact }      = require('./lib/setup-react');
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-console.log('\n Welcome to Autoverse Agent CLI!\n');
+const ask = (question) => new Promise((resolve) => rl.question(question, resolve));
 
-rl.question('\n Enter Your Name:  ', (name) => {
-  console.log(`\n Thank you, ${name}! Setting up your Autoverse Dashboard...\n`);
+const askRequired = async (question, fieldName) => {
+  while (true) {
+    const value = await ask(question);
+    if (value.trim() !== '') return value.trim();
+    console.log(`\x1b[31m  ${fieldName} cannot be empty. Please try again.\x1b[0m`);
+  }
+};
 
-  const cwd = process.cwd(); 
+async function main() {
+  console.log('\n  Welcome to Autoverse Agent CLI\n');
 
-  // --- Detect framework ---
-  const packageJsonPath = path.join(cwd, 'package.json');
+  console.log('\x1b[33m');
+  console.log('  --------------------------------------------------');
+  console.log('  IMPORTANT — Read carefully before continuing.');
+  console.log('');
+  console.log('  You are about to create credentials for your');
+  console.log('  Autoverse Dashboard. These will be saved to');
+  console.log('  your .env file. You can change them later if needed.');
+  console.log('');
+  console.log('  Your input is case-sensitive.');
+  console.log('  --------------------------------------------------');
+  console.log('\x1b[0m');
 
-  if (!fs.existsSync(packageJsonPath)) {
-    console.log('❌ No package.json found. Please run this inside a Next.js or React project folder.\n');
+  const agentName = await askRequired('  Enter your Agent name   : ', 'Agent name');
+  const username  = await askRequired('  Create a username       : ', 'Username');
+  const password  = await askRequired('  Create a password       : ', 'Password');
+
+  console.log('\n  Got it! Setting up your Autoverse Dashboard...\n');
+
+  const cwd = process.cwd();
+  const { framework, baseDir } = detect(cwd);
+
+  if (!framework) {
+    console.log('\x1b[31m');
+    console.log('  This does not look like a Next.js or React project.');
+    console.log('  Please run this inside your project folder.');
+    console.log('\x1b[0m\n');
     rl.close();
     process.exit(1);
   }
 
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-  const deps = {
-    ...packageJson.dependencies,
-    ...packageJson.devDependencies
-  };
+  saveEnv(cwd, agentName, username, password);
 
-  const isNext = !!deps['next'];
-  const isReact = !!deps['react'];
-
-  if (!isNext && !isReact) {
-    console.log('❌ This does not look like a Next.js or React project. Exiting.\n');
-    rl.close();
-    process.exit(1);
-  }
-
-  if (isNext) {
-    setupNext(cwd, name);
-  } else if (isReact) {
-    setupReact(cwd, name);
+  if (framework === 'next') {
+    setupNext(cwd, baseDir, agentName, username, password);
+  } else if (framework === 'react') {
+    setupReact(cwd, agentName, username, password);
   }
 
   rl.close();
-});
-
-
-// ─────────────────────────────────────────
-// NEXT.JS SETUP
-// ─────────────────────────────────────────
-function setupNext(cwd, name) {
-  // Detect if user is using src/ folder or not
-  const hasSrc = fs.existsSync(path.join(cwd, 'src'));
-
-  const baseDir = hasSrc ? path.join(cwd, 'src') : cwd;
-
-  const hasAppRouter = fs.existsSync(path.join(baseDir, 'app'));
-  const hasPagesRouter = fs.existsSync(path.join(baseDir, 'pages'));
-
-  if (hasAppRouter) {
-    const dir = path.join(baseDir, 'app', 'autoverse-dashboard');
-    fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, 'page.js'), nextAppPage());
-    console.log('✅ Detected Next.js (App Router)');
-  } else if (hasPagesRouter) {
-    const dir = path.join(baseDir, 'pages');
-    fs.writeFileSync(path.join(dir, 'autoverse-dashboard.js'), nextPagesPage());
-    console.log('✅ Detected Next.js (Pages Router)');
-  } else {
-    console.log('⚠️  Could not detect router type. Creating in app folder.');
-    const dir = path.join(baseDir, 'app', 'autoverse-dashboard');
-    fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, 'page.js'), nextAppPage());
-  }
-
-  console.log('\n🎉 Done! Visit http://localhost:3000/autoverse-dashboard in your browser.\n');
 }
 
-
-// ─────────────────────────────────────────
-// REACT (VITE/CRA) SETUP
-// ─────────────────────────────────────────
-function setupReact(cwd, name) {
-  // Create src/pages/AutoverseDashboard.jsx
-  const dir = path.join(cwd, 'src', 'pages');
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'AutoverseDashboard.jsx'), reactPage());
-
-  console.log('✅ Detected React app');
-  console.log('\n🎉 Done! Component created at src/pages/AutoverseDashboard.jsx');
-  console.log('👉 Add this route in your App.jsx:\n');
-  console.log('   import AutoverseDashboard from "./pages/AutoverseDashboard"');
-  console.log('   <Route path="/autoverse-dashboard" element={<AutoverseDashboard />} />\n');
-}
-
-
-// ─────────────────────────────────────────
-// PAGE TEMPLATES
-// ─────────────────────────────────────────
-function nextAppPage() {
-  return `export default function AutoverseDashboard() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <h1>Hello World</h1>
-    </div>
-  );
-}
-`;
-}
-
-function nextPagesPage() {
-  return `export default function AutoverseDashboard() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <h1>Hello World</h1>
-    </div>
-  );
-}
-`;
-}
-
-function reactPage() {
-  return `export default function AutoverseDashboard() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <h1>Hello World</h1>
-    </div>
-  );
-}
-`;
-}
+main();

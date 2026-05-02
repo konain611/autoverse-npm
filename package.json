@@ -1,12 +1,12 @@
 {
   "name": "autoverse-agent-cli",
-  "version": "1.0.4",
-  "description": "CLI that sets up Autoverse Dashboard in Next.js and React apps",
+  "version": "1.1.1",
+  "description": "CLI that sets up a secure Autoverse Dashboard in Next.js and React apps",
   "main": "index.js",
   "bin": {
     "autoverse-agent-cli": "./index.js"
   },
-  "keywords": ["cli", "nextjs", "react", "autoverse"],
+  "keywords": ["cli", "nextjs", "react", "autoverse", "dashboard"],
   "author": "Syed Konain Nasir",
   "license": "ISC"
 }
