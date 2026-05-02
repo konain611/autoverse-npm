@@ -42,7 +42,7 @@ async function main() {
   console.log('\n  Got it! Setting up your Autoverse Dashboard...\n');
 
   const cwd = process.cwd();
-  const { framework, baseDir } = detect(cwd);
+  const { framework, baseDir, envPrefix } = detect(cwd);
 
   if (!framework) {
     console.log('\x1b[31m');
@@ -53,12 +53,12 @@ async function main() {
     process.exit(1);
   }
 
-  saveEnv(cwd, agentName, username, password);
+  saveEnv(cwd, envPrefix, agentName, username, password);
 
   if (framework === 'next') {
     setupNext(cwd, baseDir, agentName, username, password);
   } else if (framework === 'react') {
-    setupReact(cwd, agentName, username, password);
+    setupReact(cwd);
   }
 
   rl.close();
