@@ -38,6 +38,7 @@ async function main() {
   const agentName = await askRequired('  Enter your Agent name   : ', 'Agent name');
   const username  = await askRequired('  Create a username       : ', 'Username');
   const password  = await askRequired('  Create a password       : ', 'Password');
+  const geminiApiKey = await askRequired('  Enter Gemini API key    : ', 'Gemini API key');
 
   console.log('\n  Got it! Setting up your Autoverse Dashboard...\n');
 
@@ -53,7 +54,7 @@ async function main() {
     process.exit(1);
   }
 
-  saveEnv(cwd, envPrefix, agentName, username, password);
+  saveEnv(cwd, envPrefix, agentName, username, password, geminiApiKey);
 
   if (framework === 'next') {
     setupNext(cwd, baseDir, agentName, username, password);
