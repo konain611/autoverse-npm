@@ -1,6 +1,6 @@
 {
   "name": "autoverse-agent-cli",
-  "version": "1.1.8",
+  "version": "1.2.2",
   "description": "CLI that sets up a secure Autoverse Dashboard in Next.js and React apps",
   "main": "index.js",
   "bin": {
