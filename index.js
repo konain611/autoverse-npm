@@ -11,18 +11,17 @@ const rl = readline.createInterface({
 });
 
 const AI_PROVIDERS = [
-  { id: 'gemini',     label: 'Google Gemini',        envKey: 'GEMINI_API_KEY',      keyLabel: 'Gemini' },
-  { id: 'openai',     label: 'OpenAI',               envKey: 'OPENAI_API_KEY',      keyLabel: 'OpenAI' },
-  { id: 'anthropic',  label: 'Anthropic Claude',     envKey: 'ANTHROPIC_API_KEY',   keyLabel: 'Anthropic' },
-  { id: 'openrouter', label: 'OpenRouter',           envKey: 'OPENROUTER_API_KEY',  keyLabel: 'OpenRouter' },
-  { id: 'groq',       label: 'Groq',                 envKey: 'GROQ_API_KEY',        keyLabel: 'Groq' },
-  { id: 'mistral',    label: 'Mistral AI',           envKey: 'MISTRAL_API_KEY',     keyLabel: 'Mistral' },
-  { id: 'cohere',     label: 'Cohere',               envKey: 'COHERE_API_KEY',      keyLabel: 'Cohere' },
-  { id: 'perplexity', label: 'Perplexity',           envKey: 'PERPLEXITY_API_KEY',  keyLabel: 'Perplexity' },
-  { id: 'together',   label: 'Together AI',          envKey: 'TOGETHER_API_KEY',    keyLabel: 'Together AI' },
-  { id: 'xai',        label: 'xAI',                  envKey: 'XAI_API_KEY',         keyLabel: 'xAI' },
-  { id: 'deepseek',   label: 'DeepSeek',             envKey: 'DEEPSEEK_API_KEY',    keyLabel: 'DeepSeek' },
-  { id: 'azure-openai', label: 'Azure OpenAI',       envKey: 'AZURE_OPENAI_API_KEY', keyLabel: 'Azure OpenAI' },
+  { id: 'gemini',     label: 'Google Gemini',    envKey: 'GEMINI_API_KEY',      keyLabel: 'Gemini',     model: 'gemini-2.0-flash' },
+  { id: 'openai',     label: 'OpenAI',           envKey: 'OPENAI_API_KEY',      keyLabel: 'OpenAI',     model: 'gpt-4o-mini' },
+  { id: 'anthropic',  label: 'Anthropic Claude', envKey: 'ANTHROPIC_API_KEY',   keyLabel: 'Anthropic',  model: 'claude-3-5-haiku-latest' },
+  { id: 'openrouter', label: 'OpenRouter',       envKey: 'OPENROUTER_API_KEY',  keyLabel: 'OpenRouter', model: 'openai/gpt-4o-mini' },
+  { id: 'groq',       label: 'Groq',             envKey: 'GROQ_API_KEY',        keyLabel: 'Groq',       model: 'llama-3.3-70b-versatile' },
+  { id: 'mistral',    label: 'Mistral AI',       envKey: 'MISTRAL_API_KEY',     keyLabel: 'Mistral',    model: 'mistral-small-latest' },
+  { id: 'cohere',     label: 'Cohere',           envKey: 'COHERE_API_KEY',      keyLabel: 'Cohere',     model: 'command-r-plus' },
+  { id: 'perplexity', label: 'Perplexity',       envKey: 'PERPLEXITY_API_KEY',  keyLabel: 'Perplexity', model: 'sonar' },
+  { id: 'together',   label: 'Together AI',      envKey: 'TOGETHER_API_KEY',    keyLabel: 'Together AI', model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo' },
+  { id: 'xai',        label: 'xAI',              envKey: 'XAI_API_KEY',         keyLabel: 'xAI',        model: 'grok-2-latest' },
+  { id: 'deepseek',   label: 'DeepSeek',         envKey: 'DEEPSEEK_API_KEY',    keyLabel: 'DeepSeek',   model: 'deepseek-chat' },
 ];
 
 const ask = (question) => new Promise((resolve) => rl.question(question, resolve));
@@ -42,7 +41,7 @@ function renderProviderList(selectedIndex) {
     const pointer = selected ? '>' : ' ';
     const color = selected ? '\x1b[7m' : '';
     const reset = selected ? '\x1b[0m' : '';
-    console.log(`  ${pointer} ${color}${provider.label.padEnd(18)} ${provider.envKey}${reset}`);
+    console.log(`  ${pointer} ${color}${provider.label.padEnd(18)} ${provider.model}${reset}`);
   });
   console.log('\n  Use ↑/↓ arrows and press Enter.\n');
 }
@@ -51,7 +50,7 @@ async function askProviderChoice() {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
     console.log('\n  Select your AI provider:\n');
     AI_PROVIDERS.forEach((provider, index) => {
-      console.log(`  ${index + 1}. ${provider.label} (${provider.envKey})`);
+      console.log(`  ${index + 1}. ${provider.label} (${provider.model})`);
     });
     while (true) {
       const value = await ask('\n  Enter provider number: ');
